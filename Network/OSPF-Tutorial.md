@@ -75,7 +75,8 @@ In this example, suppose R1 has 2 loopback interfaces & 2 physical interfaces
 + Fa01 200.200.200.1
 
 As said above, the loopback interfaces are preferred to physical interfaces (because they are never down) so the highest IP address of the loopback interfaces is chosen as the router-id - Loopback 1 IP address is chosen as the router-id.
-![--](OSPF-TutorialOSPF_choose_router_id.jpg)
+
+![--](OSPF-Tutorial/OSPF_choose_router_id.jpg)
 
 Suppose R1 doesn’t have any loopback interfaces but it has 2 physical interfaces
 
@@ -89,6 +90,7 @@ Although Fa00 has higher IP address but it is shutdown so R1 will choose Fa01 as
 Now both the routers have the router-id so they will send Hello packets on all OSPF-enabled interfaces to determine if there are any neighbors on those links. The information in the OSPF Hello includes the OSPF Router ID of the router sending the Hello packet.
 
 For example, R1 wants to find out if it has any neighbor running OSPF it sends a Hello message to the multicast address 224.0.0.5. This is the multicast address for all OSPF routers and all routers running OSPF will proceed this message.
+
 ![--](OSPF-Tutorial/OSPF_initial_route_discovery.jpg)
 
 If an OSPF router receives an OSPF Hello packet that satisfied all its requirement then it will establish adjacency with the router that sent the Hello packet. In this example, if R1 meet R2’s requirements, meaning it has the same Hello interval, Dead interval and AREA number, R2 will add R1 to its neighbor table.
@@ -106,11 +108,13 @@ Now R1 and R2 are neighbors but they don’t exchange LSAs immediately. Instead,
 The neighbors also determine who will be the master and who will be the slave. The router which higher router-id will become master and initiates the database exchange. The receiver acknowledges a received DD packet by sending an identical DD packet back to the sender. Each DD packet has a sequence number and only the master can increment sequence numbers.
 
 ![--](OSPF-Tutorial/OSPF_send_DBD.jpg)
+
 ![--](OSPF-Tutorial/OSPF_send_DBD_2.jpg)
 
 R1 or R2 can send Request to get missing LSA from its neighbors
 
 ![--](OSPF-Tutorial/OSPF_send_request.jpg)
+
 ![--](OSPF-Tutorial/OSPF_send_update.jpg)
 
 R2 sends back an LSAck packet to acknowledge the packet.
@@ -157,6 +161,7 @@ Routing Table
 
 
 D Exchange LSDB’s list
+
 Neighbors use DD (Data Description) to exchange their LSDB catalogs.  In this scenario, R1 sends DD to R2 first. It says I have a Route LSA from R1. R2 also sends DD to R1 I have a Route LSA from R2.
 
 Note DD works like table for content. It lists what LSDB has, but not details. By  reading DD, the receiving router can determine what it is missing and them ask the sender to transmit required LSAs.
@@ -174,13 +179,43 @@ R2 also sends request to R1. R1 replies an Update. Upon receiving Update, R2 add
 Note OSPF works distributely. After routers have synchronized their LSDB, they use the same data (LSDB) to calculate shortest paths, and updates their routing tables independently.
 
 Ack update  LSAs are received
+
 In order to assure reliable transmission, when a router receives an Update, it sends an Ack to the Update sender. If the sender does not receivie Ack within a specific peried, it times out and retransmits Update.
 
 Note OSPF uses Update-Ack to implemnet relaible transmission. It does not use TCP.
 
 H1 ping H2 succeeded.
+
 Each OSPF router creates a Router LSA to describe its interfaces’ IP addresses and floods its Router LSA to its neighbors. After a few rounds of flooding, all OSPF routers have the same set of Router LSAs in their LSDBs. Now routers can use the same LSDB to calculate routes and update routing tables.
 
 From LSDB, a router learns the entire topology the number of routers being connected. Router interfaces and their IP addresses, interface link costs (OSPF metric). With such detail information, routers are able to calculate routing paths to reach all destinations found in LSDB. For example, in the OSPF basic simulation (see External links), R1’s LSDB contains two Router LSAs – A Router LSA from R1. R1 has two links. Their IP addresses are 192.168.1.024,192.168.3.030. – A Router LSA from R2. R2 has two links. Their IP addresses are 192.168.2.024,192.168.3.030. From these LSA, R1 can calculate the routing path to reach remote destination 192.11.68.2.2 and adds an entry (192.168.2.024, S10) to its routing table.
 
 [原文地址](httpwww.9tut.comospf-routing-protocol-tutorial)
+
+
+# Introduction to OSPF Stub Areas
+
+* Stub area
+
+* Totally stub area
+
+* NSSA (not so stubby area)
+
+* Totally NSSA (totally not so stubby area)
+
+These special area types are used to insert default routes into an area and replace type 3 summary LSAs and type 5 external LSAs. This will keep the LSA flooding to a minimum, LSDB smaller, less SPF calculations and a smaller routing table. Let me give you an overview with the different stub areas:
+
+![--](OSPF-Tutorial/ospf-stub-areas.png)
+
+Let’s start with a nice topology with 5 areas. In the middle you’ll find the backbone area and the other areas are configured as the different stub area types.
+
+If you configure an area as stub it will block all type 5 external LSAs. All the prefixes that you redistributed into OSPF from another routing protocol are not welcome in the stub area. Since you are not allowed to have type 5 external LSAs in the stub area it’s also impossible to have an ASBR in the stub area. In order to reach networks in other areas there will be a default route.
+
+Of course there’s always an exception. So what if you want an area to be stub area but you also have an ASBR in this area? You can use the NSSA (not-so-stubby-area). This is the same thing as the stub area with the exception that you are allowed to have an ASBR within the area. How does it work? This is where the type 7 external LSA kicks in. Since we are not allowed to use the type 5 external LSA we’ll just use a new LSA type.
+
+What about totally stub? This area type will block type 5 external LSAs and type 3 summary LSAs. It’s impossible to have an ASBR in the totally stub area since type 5 external LSAs are blocked.
+
+If you want to block type 3 summary LSAs and type 5 external LSAs but still need an ASBR within the totally stub area you can turn it into a totally NSSA (totally not-so-stubby-area).  This will block both LSA types but you can still have an ASBR in this area type.
+
+
+[OSPF LSA Types Explained](https://networklessons.com/ospf/ospf-lsa-types-explained/)
