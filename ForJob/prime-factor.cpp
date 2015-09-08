@@ -11,11 +11,10 @@ void prim(int m, int n){
 		prim(m, n);
 		cout << n << endl;
 	}
-	//cout << m << endl;
 }
 
 
 int main(){
-	prim(56, 2);
+	prim(36, 2);
 	return 0;
 }
