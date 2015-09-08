@@ -3,7 +3,23 @@
 
 #### 通过一个错误的使用示例来说明
 代码如下：
+```C
+// wrong case 
+void test(){
+  int a = 100;
+  char str2[10];
+  char pad[100] = "xxxxx"; // 5
+  char str1[10];
+  char *s = "hello world !";
+  int i=0;
+  for(i=0; i<10; i++)
+    str1[i] = 'a';
 
+  strcpy(str2, str1);
+  printf("str1 addr: %p, pad addr : %p, str2 addr:%p \n", str1, pad, str2);
+  printf("%s\n", str2);
+}
+```
 
 你觉得运行结果是什么？
 
@@ -30,6 +46,20 @@
 3. 返回参数是 char *类型，以便级联操作；
 
 就可以写出下面的代码：
+```C
+char * mystrcpy(char *dest, const char *src){
+  if(src == NULL || dest == NULL){
+    printf("%s\n", "Error!");
+    return NULL;
+  }
+
+  char *addr = dest;
+  while((*dest++ = *src++) != '\0');
+
+  return dest;
+}
+```
+
 
 #### 看strcpy源码！
 
@@ -59,7 +89,29 @@ strcpy (char *dest, const char *src)
 NO，当dest指向的存储空间，不足以存储src指向的字符串，就会出现问题，会覆盖其他内存空间的值，这是致命的。示例：
 
 ```C
+void test3(){
+  char str2[5];
+  char pad[100] = "xxxxx"; // 5
+  char str1[10];
+  char *s = "hello world !";
+  int i=0;
+  for(i=0; i<9; i++)
+    str1[i] = 'a';
+  str1[9] = '\0';
 
+  printf("str1 addr: %p, str2 addr:%p \n", str1, str2);
+  printf("str2 : %s\n", str2);
+  printf("str1 : %s\n", str1);
+  printf("pad : %s\n", pad);
+
+  printf("%s\n", "after strcpy():");
+  strcpy(str2, str1);
+  // mystrcpy(str2, str1);
+  
+  printf("str2 : %s\n", str2);
+  printf("str1 : %s\n", str1);
+  printf("pad : %s\n", pad);
+}
 ```
 ![--](strcpy-result2.png)
 
@@ -70,7 +122,17 @@ NO，当dest指向的存储空间，不足以存储src指向的字符串，就�
 我们的版本中可以判断非空，但是对于一个没有初始化的指针，无论如何strcpy都是会出问题的，包括库中的strcpy。
 
 ```C
+void test4(){
+  char *str2;
+  char pad[100] = "xxxxx"; // 5
+  char str1[10];
+  int i=0;
+  for(i=0; i<9; i++)
+    str1[i] = 'a';
+  str1[9] = '\0';
 
+  strcpy(str2, str1);
+}
 ```
 ![--](strcpy-result3.png)
 
