@@ -1,13 +1,5 @@
 StringBuffer 和 StringBuilder 的区别是什么？
 
-
-
-
-
-
-
-
-
 ## String 的问题
 
 因为String是immutable的，每次的操作都会创建一个新的String对象，当操作频繁的时候就会带来开销，而StringBuilder，StringBuffer内部维护的是字符数组，每次的操作都是改变字符数组的状态，避免创建大量的String对象。
