@@ -1,0 +1,3 @@
+java Cipher类非线程安全，Cipher有状态，实现工具类的时候要注意
+
+在加解密方法中生成一个新的Cipher
